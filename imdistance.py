@@ -6,6 +6,7 @@ import cv2
 import os
 import shutil
 import glob
+import math
 from matcher import *
 from matplotlib import pyplot as plt
 
@@ -13,7 +14,7 @@ def imdistance(filename1, filename2, show = None):
     if show == None:
         show = False
 
-    img1 = cv2.imread(filename1, 0)
+    img1 = cv2.imread(filename1, 0) # Target image
     img2 = cv2.imread(filename2, 0)
 
     orb = cv2.ORB()
@@ -26,23 +27,17 @@ def imdistance(filename1, filename2, show = None):
 
     print "Number of matches: {}, len of des1 {}, len of des2 {}".format(len(matches), len(des1), len(des2))
 
-    # Let's say des1 (img1) is the target image that's not changing
-    # So let's see how much of its features are in img1 and to what degree
-    def matched(_id, matches):
-        for match in matches:
-            if match.queryIdx == _id:
-                return match
-        return False
-
     sum = 0
 
-    for i, descriptor in enumerate(des1):
-        match = matched(i, matches)
-        if match != False:
-            sum += match.distance
-        else:
-            temp = bf.match( np.array([ descriptor ]), np.array([ np.uint8(np.zeros(32)) ]) )
-            sum += temp[0].distance
+    def get_euclidean_dist_to_all(_id, keypoints):
+        total_distance = 0
+        for point in keypoints:
+            total_distance += math.sqrt((keypoints[_id].pt[0] - point.pt[0]) ** 2 + (keypoints[_id].pt[1] - point.pt[1]) ** 2)
+
+        return total_distance
+
+    for match in matches:
+        sum += abs(get_euclidean_dist_to_all(match.queryIdx, kp1) - get_euclidean_dist_to_all(match.trainIdx, kp2))
 
     if show == True:
         print sum
