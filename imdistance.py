@@ -7,6 +7,7 @@ import cv2
 import os
 import shutil
 import glob
+import math
 from matcher import *
 from matplotlib import pyplot as plt
 
@@ -80,7 +81,7 @@ def imdistance(filename1, filename2, show = None):
     if show == None:
         show = False
 
-    img1 = cv2.imread(filename1, 0)
+    img1 = cv2.imread(filename1, 0) # Target image
     img2 = cv2.imread(filename2, 0)
 
     orb = cv2.ORB()
